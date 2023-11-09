@@ -145,7 +145,7 @@ Lo más habitual es que una tabla se corresponda con una clase, cada fila de una
 
 La siguiente imagen muestra la correspondencia entre los elementos de una base de datos y las clases y objetos de un programa:
 
-## ​V ![](RackMultipart20231108-1-oi856k_html_df69ec1826779048.png) entajas de usar un ORM
+## ​V ![](Frikio/frikio_db.png) entajas de usar un ORM
 
 Algunas ventajas de usar un ORM, como SQLAlchemy, son:
 
