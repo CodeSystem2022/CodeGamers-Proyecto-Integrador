@@ -45,7 +45,7 @@ class Users(db.Model, UserMixin):
         return check_password_hash(self.password, password)
 
     def save(self):
-        if not self.user_id:
+        if not self.id:
             db.session.add(self)
         db.session.commit()
 
@@ -53,7 +53,7 @@ class Users(db.Model, UserMixin):
         return '<User {}>'.format(self.email)
 
     @staticmethod
-    def get_by_id(user_id):
+    def get_by_id(id):
         return Users.query.get(id)
 
     @staticmethod

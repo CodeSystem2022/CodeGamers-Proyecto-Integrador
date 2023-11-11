@@ -2,12 +2,11 @@ from flask import render_template, redirect, url_for, flash, request
 from app import app
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import Paginas, Remeras, Users, Cart, Domicilios, Orders, OrderItems
-from .forms import SignupForm, LoginForm, DomicilioForm
+from .forms import SignupForm, LoginForm, DomicilioForm, ContactoForm
 from urllib.parse import urlparse
 
 
 @app.route('/')
-@app.route('/remeras')
 def home():
     remeras = Remeras.query.all()
     return render_template('index.html', remeras=remeras)
@@ -18,10 +17,19 @@ def remera(remera_id):
     remera = Remeras.query.filter_by(remera_id=remera_id).first()
     return render_template('remera.html', remera=remera)
 
+@app.route("/contacto", methods=['GET', 'POST'])
+def contacto():
+    form = ContactoForm()
+    if form.validate_on_submit():
+        flash('Gracias por contactarnos, en breve nos pondremos en contacto', 'success')
+        # Agregar aquí el codigo para enviar el mensaje por email.
+        return redirect(url_for('home'))
 
-@app.route('/acerca')
-def acerca():
-    pagina = Paginas.query.filter_by(pagina_id=1).first()
+    return render_template('contacto.html', form=form)
+
+@app.route('/pagina-<int:pagina_id>')
+def acerca(pagina_id):
+    pagina = Paginas.query.filter_by(pagina_id=pagina_id).first()
     return render_template('pagina.html', pagina=pagina)
 
 
@@ -29,11 +37,13 @@ def acerca():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
+
     form = LoginForm()
     if form.validate_on_submit():
         user = Users.get_by_email(form.email.data)
         if user is not None and user.check_password(form.password.data):
             login_user(user)
+            flash('Ingreso exitoso', 'success')
             return redirect(url_for('home'))
         else:
             flash('Email o contraseña incorrectos', 'danger')
@@ -62,7 +72,8 @@ def signup():
         # Comprobamos que no hay ya un usuario con ese email
         user = Users.get_by_email(email)
         if user is not None:
-            error = f'El email {email} ya está siendo utilizado por otro usuario'
+            flash(f'El email {email} ya está siendo utilizado por otro usuario', category='danger')
+
         else:
             # Creamos el usuario y lo guardamos
             user = Users(name=name, email=email)
@@ -180,8 +191,9 @@ def domicilio_envio():
                 cp=form.cp.data,
                 provincia=form.provincia.data,
                 telefono=form.telefono.data)
-        order_id = crear_orden(current_user.id, domicilio.domicilio_id)
         domicilio.save()
+        domicilio = Domicilios.query.filter_by(domicilio_user_id=current_user.id).first()
+        order_id = crear_orden(current_user.id, domicilio.domicilio_id)
         return redirect(url_for('forma_pago', order_id=order_id))
 
     # Si el usuario ya tiene un domicilio, llena el formulario con esos datos
@@ -199,7 +211,17 @@ def domicilio_envio():
 @app.route('/forma_pago-<int:order_id>', methods=['GET', 'POST'])
 def forma_pago(order_id):
     order = Orders.query.filter_by(order_id=order_id).first()
-    return render_template('pago.html', total=order.costo_total)
+    if order.costo_total == 8900:
+        link = 'https://mpago.la/2QDkbr3'
+    elif order.costo_total == 17800:
+        link = 'https://mpago.la/1vH3jek'
+    elif order.costo_total == 26700:
+        link = 'https://mpago.la/1PbqKBk'
+    elif order.costo_total == 35600:
+        link = 'https://mpago.la/2U1pQvE'
+    else:
+        link = 'link.mercadopago.com.ar/frikio'
+    return render_template('pago.html', link=link, total=order.costo_total)
 
 
 def crear_orden(user_id, domicilio_id):

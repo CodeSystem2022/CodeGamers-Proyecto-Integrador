@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField
+from wtforms import StringField, SubmitField, PasswordField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length
 
 
@@ -24,3 +24,10 @@ class DomicilioForm(FlaskForm):
     provincia = StringField('Provincia', validators=[DataRequired(), Length(max=64)])
     telefono = StringField('Teléfono', validators=[DataRequired(), Length(max=32)])
     submit = SubmitField('Continuar en Metodo de pago')
+
+
+class ContactoForm(FlaskForm):
+    nombre = StringField('Nombre', validators=[DataRequired()])
+    email = StringField('e-mail', validators=[DataRequired(), Email()])
+    mensaje = TextAreaField('Mensaje', validators=[DataRequired()])
+    submit = SubmitField('Enviar')
